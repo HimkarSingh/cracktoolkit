@@ -6,6 +6,7 @@ export default function ImageToPdfPage() {
       title="Image to PDF"
       description="Convert your JPG, PNG, and other image files into a single, easy-to-share PDF document. Drag and drop to reorder images."
       buttonText="Convert to PDF"
+      multiple={true}
     />
   );
 }

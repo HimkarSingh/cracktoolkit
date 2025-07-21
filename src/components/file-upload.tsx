@@ -5,25 +5,28 @@ import { UploadCloud } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface FileUploadProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect: (files: File[]) => void;
   accept?: string;
   className?: string;
+  multiple?: boolean;
 }
 
 export function FileUpload({
   onFileSelect,
   accept = '*',
   className = '',
+  multiple = false,
 }: FileUploadProps) {
   const [dragging, setDragging] = useState(false);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileNames, setFileNames] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setFileName(file.name);
-      onFileSelect(file);
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileList = Array.from(files);
+      setFileNames(fileList.map((f) => f.name));
+      onFileSelect(fileList);
     }
   };
 
@@ -40,15 +43,20 @@ export function FileUpload({
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.match(accept.replace('*', '.*'))) {
-      if (fileInputRef.current) {
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInputRef.current.files = dataTransfer.files;
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const fileList = Array.from(files).filter((file) =>
+        file.type.match(accept.replace('*', '.*'))
+      );
+      if (fileList.length > 0) {
+        if (fileInputRef.current) {
+          const dataTransfer = new DataTransfer();
+          fileList.forEach((file) => dataTransfer.items.add(file));
+          fileInputRef.current.files = dataTransfer.files;
+        }
+        setFileNames(fileList.map((f) => f.name));
+        onFileSelect(fileList);
       }
-      setFileName(file.name);
-      onFileSelect(file);
     }
   };
 
@@ -77,9 +85,19 @@ export function FileUpload({
           className="hidden"
           onChange={handleFileChange}
           accept={accept}
+          multiple={multiple}
         />
       </div>
-      {fileName && <p className="mt-4 text-center text-sm">Selected file: {fileName}</p>}
+      {fileNames.length > 0 && (
+        <div className="mt-4 text-center text-sm">
+          <p>Selected file(s):</p>
+          <ul className="list-disc list-inside">
+            {fileNames.map((name) => (
+              <li key={name}>{name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

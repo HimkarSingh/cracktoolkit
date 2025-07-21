@@ -16,13 +16,19 @@ interface ToolPageLayoutProps {
   title: string;
   description: string;
   buttonText: string;
+  multiple?: boolean;
 }
 
-export function ToolPageLayout({ title, description, buttonText }: ToolPageLayoutProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+export function ToolPageLayout({
+  title,
+  description,
+  buttonText,
+  multiple = false,
+}: ToolPageLayoutProps) {
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-  const handleFileSelect = (file: File) => {
-    setSelectedFile(file);
+  const handleFileSelect = (files: File[]) => {
+    setSelectedFiles(files);
   };
 
   return (
@@ -33,10 +39,10 @@ export function ToolPageLayout({ title, description, buttonText }: ToolPageLayou
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <FileUpload onFileSelect={handleFileSelect} />
+          <FileUpload onFileSelect={handleFileSelect} multiple={multiple} />
         </CardContent>
         <CardFooter>
-          <Button disabled={!selectedFile} className="w-full">
+          <Button disabled={selectedFiles.length === 0} className="w-full">
             {buttonText}
           </Button>
         </CardFooter>

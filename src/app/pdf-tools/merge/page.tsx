@@ -6,6 +6,7 @@ export default function MergePdfPage() {
       title="Merge PDF"
       description="Combine multiple PDF files into one single, organized document. Upload your files and arrange them in the desired order."
       buttonText="Merge PDFs"
+      multiple={true}
     />
   );
 }
