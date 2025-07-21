@@ -31,6 +31,8 @@ export function ToolPageLayout({
     setSelectedFiles(files);
   };
 
+  const fileAccept = multiple ? "image/*" : "application/pdf";
+
   return (
     <div className="flex flex-col items-center justify-center w-full h-full">
       <Card className="w-full max-w-2xl">
@@ -39,7 +41,7 @@ export function ToolPageLayout({
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <FileUpload onFileSelect={handleFileSelect} multiple={multiple} accept="application/pdf" />
+          <FileUpload onFileSelect={handleFileSelect} multiple={multiple} accept={fileAccept} />
         </CardContent>
         <CardFooter>
           <Button disabled={selectedFiles.length === 0} className="w-full">

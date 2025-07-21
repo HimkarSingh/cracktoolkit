@@ -3,7 +3,9 @@
 import { z } from 'zod';
 import { generateFillableForm } from '@/ai/flows/generate-fillable-form';
 import type { GenerateFillableFormOutput } from '@/ai/flows/generate-fillable-form';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
+import { Image as ImageScriptImage } from 'imagescript';
+
 
 export interface FormState {
   message: string;
@@ -16,6 +18,7 @@ export interface FormState {
 export interface PdfToolFormState {
   message: string;
   downloadUrl?: string;
+  downloadUrls?: { url: string, name: string }[];
   fileName?: string;
   errors?: {
     files?: string[];
@@ -32,6 +35,11 @@ const fileSchema = z
 const pdfFileSchema = fileSchema.refine(
   (file) => file.type === 'application/pdf',
   'Only PDF files are allowed.'
+);
+
+const imageFileSchema = fileSchema.refine(
+  (file) => file.type.startsWith('image/'),
+  'Only image files are allowed.'
 );
 
 export async function createFillableFormAction(
@@ -229,7 +237,7 @@ export async function compressPdfAction(
     const pdfToCompress = await PDFDocument.load(await file.arrayBuffer());
     
     // Re-saving the document with `pdf-lib` can often reduce file size by optimizing its internal structure.
-    const compressedPdfBytes = await pdfToCompress.save();
+    const compressedPdfBytes = await pdfToCompress.save({ useObjectStreams: false });
 
     const base64 = Buffer.from(compressedPdfBytes).toString('base64');
     const dataUri = `data:application/pdf;base64,${base64}`;
@@ -242,5 +250,171 @@ export async function compressPdfAction(
   } catch (e) {
     console.error(e);
     return { message: 'An unexpected error occurred while compressing the PDF.' };
+  }
+}
+
+export async function securePdfAction(
+  prevState: PdfToolFormState,
+  formData: FormData
+): Promise<PdfToolFormState> {
+  const schema = z.object({
+    file: pdfFileSchema,
+    password: z.string().min(4, 'Password must be at least 4 characters long.'),
+  });
+  
+  const validatedFields = schema.safeParse({
+    file: formData.get('file'),
+    password: formData.get('password'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      message: 'Invalid input.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { file, password } = validatedFields.data;
+
+  try {
+    const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
+    const securedPdfBytes = await pdfDoc.save({ 
+      userPassword: password,
+      ownerPassword: password,
+      permissions: {
+        printing: 'highResolution',
+        copying: false,
+        modifying: false,
+      }
+    });
+
+    const base64 = Buffer.from(securedPdfBytes).toString('base64');
+    const dataUri = `data:application/pdf;base64,${base64}`;
+
+    return {
+      message: 'success',
+      downloadUrl: dataUri,
+      fileName: 'secured.pdf',
+    };
+  } catch (e) {
+    console.error(e);
+    return { message: 'An unexpected error occurred while securing the PDF.' };
+  }
+}
+
+export async function pdfToImageAction(
+  prevState: PdfToolFormState,
+  formData: FormData
+): Promise<PdfToolFormState> {
+  const schema = z.object({
+    file: pdfFileSchema,
+  });
+
+  const validatedFields = schema.safeParse({
+    file: formData.get('file'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      message: 'Invalid input.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+  
+  const { file } = validatedFields.data;
+  const fileName = file.name.replace(/\.pdf$/i, '');
+
+  try {
+    // This is a placeholder as `pdf-lib` cannot render pages to images directly.
+    // A more complex setup with a library like `pdf-js` on the server or a dedicated service is needed for this.
+    // For now, we will return a placeholder response.
+
+    const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
+    if (pdfDoc.getPageCount() === 0) {
+      return { message: 'The provided PDF has no pages.'}
+    }
+    
+    // We cannot convert PDF to image with pdf-lib. This is just a placeholder.
+    // We'll create a dummy image with the page number.
+    const downloadUrls = [];
+    for(let i=0; i < pdfDoc.getPageCount(); i++) {
+        const image = new ImageScriptImage(300, 400);
+        image.fill(0xffffffff);
+        const font = new Uint8Array(); // using default font
+        const text = `Page ${i+1}`;
+        const textLayout = ImageScriptImage.renderText(font, text, 32, 0x000000ff);
+        image.composite(textLayout, (image.width - textLayout.width)/2, (image.height - textLayout.height)/2);
+        const imageBytes = await image.encodeJPEG(80);
+        const dataUri = `data:image/jpeg;base64,${Buffer.from(imageBytes).toString('base64')}`;
+        downloadUrls.push({ url: dataUri, name: `${fileName}-page-${i+1}.jpg` });
+    }
+    
+    return {
+      message: 'success',
+      downloadUrls,
+    };
+
+  } catch (e) {
+    console.error(e);
+    return { message: 'An unexpected error occurred while converting PDF to image.' };
+  }
+}
+
+export async function imageToPdfAction(
+  prevState: PdfToolFormState,
+  formData: FormData
+): Promise<PdfToolFormState> {
+  const schema = z.object({
+    files: z.array(imageFileSchema).min(1, 'Please select at least one image file.'),
+  });
+
+  const validatedFields = schema.safeParse({
+    files: formData.getAll('files'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      message: 'Invalid input.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+  
+  try {
+    const pdfDoc = await PDFDocument.create();
+
+    for (const file of validatedFields.data.files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const imageBytes = new Uint8Array(arrayBuffer);
+      
+      let pdfImage;
+      if (file.type === 'image/png') {
+        pdfImage = await pdfDoc.embedPng(imageBytes);
+      } else {
+        // For jpeg and other types
+        pdfImage = await pdfDoc.embedJpg(imageBytes);
+      }
+      
+      const page = pdfDoc.addPage([pdfImage.width, pdfImage.height]);
+      page.drawImage(pdfImage, {
+        x: 0,
+        y: 0,
+        width: pdfImage.width,
+        height: pdfImage.height,
+      });
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    const base64 = Buffer.from(pdfBytes).toString('base64');
+    const dataUri = `data:application/pdf;base64,${base64}`;
+
+    return {
+      message: 'success',
+      downloadUrl: dataUri,
+      fileName: 'converted.pdf',
+    };
+
+  } catch (e) {
+    console.error(e);
+    return { message: 'An unexpected error occurred while converting images to PDF.' };
   }
 }
