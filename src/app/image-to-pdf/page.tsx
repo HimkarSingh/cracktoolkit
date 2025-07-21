@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 import { useEffect, useState, useRef } from 'react';
 import {
   Card,
@@ -29,12 +29,10 @@ function SubmitButton() {
 export default function ImageToPdfPage() {
   const initialState: PdfToolFormState = { message: '' };
   const [state, formAction] = useActionState(imageToPdfAction, initialState);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   const handleFileSelect = (files: File[]) => {
-    setSelectedFiles(files);
      // Reset form state when new files are selected
     if (formRef.current) {
       formRef.current.reset();
