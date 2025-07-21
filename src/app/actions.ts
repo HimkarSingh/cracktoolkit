@@ -320,38 +320,11 @@ export async function pdfToImageAction(
     };
   }
   
-  const { file } = validatedFields.data;
-  const fileName = file.name.replace(/\.pdf$/i, '');
-
-  try {
-    const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
-    if (pdfDoc.getPageCount() === 0) {
-      return { message: 'The provided PDF has no pages.'}
-    }
-    
-    // We cannot convert PDF to image with pdf-lib. This is just a placeholder.
-    // We'll create a dummy SVG image with the page number.
-    const downloadUrls = [];
-    for(let i=0; i < pdfDoc.getPageCount(); i++) {
-        const svg = `
-          <svg width="300" height="400" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100%" height="100%" fill="white"/>
-            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="black">Page ${i+1}</text>
-          </svg>
-        `;
-        const dataUri = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
-        downloadUrls.push({ url: dataUri, name: `${fileName}-page-${i+1}.svg` });
-    }
-    
-    return {
-      message: 'success',
-      downloadUrls,
-    };
-
-  } catch (e) {
-    console.error(e);
-    return { message: 'An unexpected error occurred while converting PDF to image.' };
-  }
+  // PDF to image conversion is not supported by the current libraries.
+  // Return an error message to the user.
+  return { 
+    message: 'Sorry, PDF to Image conversion is not yet available. We are working on it!'
+  };
 }
 
 export async function imageToPdfAction(
