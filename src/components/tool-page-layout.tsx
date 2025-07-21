@@ -39,7 +39,7 @@ export function ToolPageLayout({
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <FileUpload onFileSelect={handleFileSelect} multiple={multiple} />
+          <FileUpload onFileSelect={handleFileSelect} multiple={multiple} accept="application/pdf" />
         </CardContent>
         <CardFooter>
           <Button disabled={selectedFiles.length === 0} className="w-full">
