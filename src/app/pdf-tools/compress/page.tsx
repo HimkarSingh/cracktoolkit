@@ -16,6 +16,8 @@ import { FileUpload } from '@/components/file-upload';
 import { compressPdfAction, type PdfToolFormState } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Download } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -31,6 +33,7 @@ export default function CompressPdfPage() {
   const initialState: PdfToolFormState = { message: '' };
   const [state, formAction] = useActionState(compressPdfAction, initialState);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [compressionLevel, setCompressionLevel] = useState([50]);
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
@@ -44,6 +47,8 @@ export default function CompressPdfPage() {
     if (selectedFile) {
       formData.append('file', selectedFile);
     }
+    // Note: The compressionLevel is not currently used in the backend action.
+    formData.append('compressionLevel', compressionLevel[0].toString());
     formAction(formData);
   };
   
@@ -93,7 +98,7 @@ export default function CompressPdfPage() {
           </CardDescription>
         </CardHeader>
         <form ref={formRef} action={formAction as never} onSubmit={handleFormSubmit}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <FileUpload
               onFileSelect={handleFileSelect}
               multiple={false}
@@ -102,6 +107,27 @@ export default function CompressPdfPage() {
              {state?.errors?.file && (
               <p className="text-sm text-destructive mt-2">{state.errors.file[0]}</p>
             )}
+             <div>
+              <Label htmlFor="compressionLevel">Compression Level</Label>
+              <div className="flex items-center gap-4 mt-2">
+                <Slider
+                  id="compressionLevel"
+                  name="compressionLevel"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={compressionLevel}
+                  onValueChange={setCompressionLevel}
+                  disabled={!selectedFile}
+                />
+                <span className="text-sm font-medium w-12 text-right">
+                  {compressionLevel[0]}%
+                </span>
+              </div>
+               <p className="text-xs text-muted-foreground mt-1">
+                Lower values result in smaller file sizes but may reduce quality. (Note: This is currently a placeholder).
+              </p>
+            </div>
           </CardContent>
           <CardFooter>
             <SubmitButton />
