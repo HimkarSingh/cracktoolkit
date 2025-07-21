@@ -42,6 +42,12 @@ const imageFileSchema = fileSchema.refine(
   'Only image files are allowed.'
 );
 
+const supportedImageFileSchema = imageFileSchema.refine(
+  (file) => ['image/jpeg', 'image/png'].includes(file.type),
+  'Only JPG and PNG images are supported.'
+);
+
+
 export async function createFillableFormAction(
   prevState: FormState,
   formData: FormData
@@ -333,7 +339,7 @@ export async function imageToPdfAction(
   formData: FormData
 ): Promise<PdfToolFormState> {
   const schema = z.object({
-    files: z.array(imageFileSchema).min(1, 'Please select at least one image file.'),
+    files: z.array(supportedImageFileSchema).min(1, 'Please select at least one JPG or PNG file.'),
   });
 
   const validatedFields = schema.safeParse({
@@ -357,9 +363,11 @@ export async function imageToPdfAction(
       let pdfImage;
       if (file.type === 'image/png') {
         pdfImage = await pdfDoc.embedPng(imageBytes);
-      } else {
-        // For jpeg and other types
+      } else if (file.type === 'image/jpeg') {
         pdfImage = await pdfDoc.embedJpg(imageBytes);
+      } else {
+        // This case should not be reached due to schema validation
+        continue;
       }
       
       const page = pdfDoc.addPage([pdfImage.width, pdfImage.height]);

@@ -85,7 +85,7 @@ export default function ImageToPdfPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Image to PDF</CardTitle>
           <CardDescription>
-            Convert your JPG, PNG, and other image files into a single,
+            Convert your JPG and PNG files into a single,
             easy-to-share PDF document. Drag and drop to reorder images.
           </CardDescription>
         </CardHeader>
@@ -97,7 +97,7 @@ export default function ImageToPdfPage() {
             <FileUpload
               onFileSelect={handleFileSelect}
               multiple={true}
-              accept="image/*"
+              accept="image/jpeg,image/png"
             />
              {state?.errors?.files && (
               <p className="text-sm text-destructive mt-2">{state.errors.files[0]}</p>
