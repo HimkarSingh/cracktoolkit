@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useEffect, useState, useRef } from 'react';
 import {
   Card,
@@ -91,7 +92,7 @@ export default function MergePdfPage() {
             Combine multiple PDF files into one single, organized document. Upload your files and arrange them in the desired order.
           </CardDescription>
         </CardHeader>
-        <form ref={formRef} action={formAction} onSubmit={handleFormSubmit}>
+        <form ref={formRef} action={formAction as never} onSubmit={handleFormSubmit}>
           <CardContent>
             <FileUpload
               onFileSelect={handleFileSelect}
