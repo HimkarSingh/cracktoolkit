@@ -203,3 +203,44 @@ export async function splitPdfAction(
     return { message: 'An unexpected error occurred while splitting the PDF.' };
   }
 }
+
+export async function compressPdfAction(
+  prevState: PdfToolFormState,
+  formData: FormData
+): Promise<PdfToolFormState> {
+  const schema = z.object({
+    file: pdfFileSchema,
+  });
+
+  const validatedFields = schema.safeParse({
+    file: formData.get('file'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      message: 'Invalid input.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { file } = validatedFields.data;
+
+  try {
+    const pdfToCompress = await PDFDocument.load(await file.arrayBuffer());
+    
+    // Re-saving the document with `pdf-lib` can often reduce file size by optimizing its internal structure.
+    const compressedPdfBytes = await pdfToCompress.save();
+
+    const base64 = Buffer.from(compressedPdfBytes).toString('base64');
+    const dataUri = `data:application/pdf;base64,${base64}`;
+
+    return {
+      message: 'success',
+      downloadUrl: dataUri,
+      fileName: 'compressed.pdf',
+    };
+  } catch (e) {
+    console.error(e);
+    return { message: 'An unexpected error occurred while compressing the PDF.' };
+  }
+}
