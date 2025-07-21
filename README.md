@@ -1,6 +1,6 @@
-# VectorFlow
+# CrackToolKit
 
-VectorFlow is a modern, sleek utility app for comprehensive PDF and image management. 
+CrackToolKit is a modern, sleek utility app for comprehensive PDF and image management. 
 
 This application is built with Next.js and Firebase Genkit.
 
