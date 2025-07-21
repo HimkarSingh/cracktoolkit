@@ -1,7 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react-dom';
 import { useEffect, useState, useRef } from 'react';
 import {
   Card,
@@ -38,17 +37,12 @@ export default function SplitPdfPage() {
 
   const handleFileSelect = (files: File[]) => {
     setSelectedFile(files[0] || null);
+    // Reset form state when a new file is selected
+    if (formRef.current) {
+      formRef.current.reset();
+    }
   };
 
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    if (selectedFile) {
-      formData.append('file', selectedFile);
-    }
-    formAction(formData);
-  };
-  
   useEffect(() => {
     if (state.message && state.message !== 'success') {
       toast({
@@ -94,7 +88,7 @@ export default function SplitPdfPage() {
             Extract specific pages or page ranges from your PDF file. Ideal for creating smaller documents or separating chapters.
           </CardDescription>
         </CardHeader>
-        <form ref={formRef} action={formAction as never} onSubmit={handleFormSubmit}>
+        <form ref={formRef} action={formAction}>
           <CardContent className="space-y-4">
             <FileUpload
               onFileSelect={handleFileSelect}

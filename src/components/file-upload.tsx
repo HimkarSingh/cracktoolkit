@@ -27,6 +27,10 @@ export function FileUpload({
       const fileList = Array.from(files);
       setFileNames(fileList.map((f) => f.name));
       onFileSelect(fileList);
+    } else {
+      // Clear file names if user cancels file selection
+      setFileNames([]);
+      onFileSelect([]);
     }
   };
 
@@ -45,9 +49,18 @@ export function FileUpload({
     setDragging(false);
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      const fileList = Array.from(files).filter((file) =>
-        file.type.match(accept.replace('*', '.*'))
-      );
+      let fileList = Array.from(files);
+      
+      // Filter by accept type
+      if (accept !== '*') {
+        const acceptRegex = new RegExp(accept.replace('*', '.*').replace(/,/g, '|'));
+        fileList = fileList.filter(file => acceptRegex.test(file.type));
+      }
+
+      if (!multiple) {
+        fileList = fileList.slice(0,1);
+      }
+      
       if (fileList.length > 0) {
         if (fileInputRef.current) {
           const dataTransfer = new DataTransfer();
@@ -77,11 +90,12 @@ export function FileUpload({
           <span className="font-semibold text-accent">Click to upload</span> or drag and drop
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          {accept === '*' ? 'Any file type' : accept}
+          {multiple ? 'Multiple files allowed' : 'Single file'}
         </p>
         <Input
           ref={fileInputRef}
           type="file"
+          name={multiple ? "files" : "file"}
           className="hidden"
           onChange={handleFileChange}
           accept={accept}

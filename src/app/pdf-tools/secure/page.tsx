@@ -1,7 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react-dom';
 import { useEffect, useState, useRef } from 'react';
 import {
   Card,
@@ -38,15 +37,10 @@ export default function SecurePdfPage() {
 
   const handleFileSelect = (files: File[]) => {
     setSelectedFile(files[0] || null);
-  };
-
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    if (selectedFile) {
-      formData.append('file', selectedFile);
+    // Reset form state when a new file is selected
+    if (formRef.current) {
+      formRef.current.reset();
     }
-    formAction(formData);
   };
   
   useEffect(() => {
@@ -94,7 +88,7 @@ export default function SecurePdfPage() {
             Protect your PDF files by adding a password. You can also set permissions to restrict printing, copying, and editing.
           </CardDescription>
         </CardHeader>
-        <form ref={formRef} action={formAction as never} onSubmit={handleFormSubmit}>
+        <form ref={formRef} action={formAction}>
           <CardContent className="space-y-4">
             <FileUpload
               onFileSelect={handleFileSelect}

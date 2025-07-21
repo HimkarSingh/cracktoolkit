@@ -35,15 +35,10 @@ export default function ImageToPdfPage() {
 
   const handleFileSelect = (files: File[]) => {
     setSelectedFiles(files);
-  };
-
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    selectedFiles.forEach((file) => {
-      formData.append('files', file);
-    });
-    formAction(formData);
+     // Reset form state when new files are selected
+    if (formRef.current) {
+      formRef.current.reset();
+    }
   };
 
   useEffect(() => {
@@ -100,8 +95,7 @@ export default function ImageToPdfPage() {
         </CardHeader>
         <form
           ref={formRef}
-          action={formAction as never}
-          onSubmit={handleFormSubmit}
+          action={formAction}
         >
           <CardContent>
             <FileUpload

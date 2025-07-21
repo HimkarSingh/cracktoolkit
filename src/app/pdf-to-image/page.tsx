@@ -30,21 +30,14 @@ function SubmitButton() {
 export default function PdfToImagePage() {
   const initialState: PdfToolFormState = { message: '' };
   const [state, formAction] = useActionState(pdfToImageAction, initialState);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   const handleFileSelect = (files: File[]) => {
-    setSelectedFile(files[0] || null);
-  };
-
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    if (selectedFile) {
-      formData.append('file', selectedFile);
+    // Reset form state when a new file is selected
+    if (formRef.current) {
+      formRef.current.reset();
     }
-    formAction(formData);
   };
 
   useEffect(() => {
@@ -113,8 +106,7 @@ export default function PdfToImagePage() {
         </CardHeader>
         <form
           ref={formRef}
-          action={formAction as never}
-          onSubmit={handleFormSubmit}
+          action={formAction}
         >
           <CardContent>
             <FileUpload

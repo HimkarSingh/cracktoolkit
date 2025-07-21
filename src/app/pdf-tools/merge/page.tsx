@@ -1,7 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react-dom';
 import { useEffect, useState, useRef } from 'react';
 import {
   Card,
@@ -30,21 +29,14 @@ function SubmitButton() {
 export default function MergePdfPage() {
   const initialState: PdfToolFormState = { message: '' };
   const [state, formAction] = useActionState(mergePdfAction, initialState);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   const handleFileSelect = (files: File[]) => {
-    setSelectedFiles(files);
-  };
-
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    selectedFiles.forEach(file => {
-      formData.append('files', file);
-    });
-    formAction(formData);
+     // Reset form state when new files are selected
+     if (formRef.current) {
+      formRef.current.reset();
+    }
   };
   
   useEffect(() => {
@@ -92,7 +84,7 @@ export default function MergePdfPage() {
             Combine multiple PDF files into one single, organized document. Upload your files and arrange them in the desired order.
           </CardDescription>
         </CardHeader>
-        <form ref={formRef} action={formAction as never} onSubmit={handleFormSubmit}>
+        <form ref={formRef} action={formAction}>
           <CardContent>
             <FileUpload
               onFileSelect={handleFileSelect}

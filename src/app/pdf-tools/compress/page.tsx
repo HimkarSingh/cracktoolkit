@@ -1,7 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react-dom';
 import { useEffect, useState, useRef } from 'react';
 import {
   Card,
@@ -39,17 +38,10 @@ export default function CompressPdfPage() {
 
   const handleFileSelect = (files: File[]) => {
     setSelectedFile(files[0] || null);
-  };
-
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    if (selectedFile) {
-      formData.append('file', selectedFile);
+    // Reset form state when a new file is selected
+    if (formRef.current) {
+      formRef.current.reset();
     }
-    // Note: The compressionLevel is not currently used in the backend action.
-    formData.append('compressionLevel', compressionLevel[0].toString());
-    formAction(formData);
   };
   
   useEffect(() => {
@@ -97,7 +89,7 @@ export default function CompressPdfPage() {
              Reduce the file size of your PDFs to make them easier to share and store, while maintaining the best possible quality.
           </CardDescription>
         </CardHeader>
-        <form ref={formRef} action={formAction as never} onSubmit={handleFormSubmit}>
+        <form ref={formRef} action={formAction}>
           <CardContent className="space-y-6">
             <FileUpload
               onFileSelect={handleFileSelect}
