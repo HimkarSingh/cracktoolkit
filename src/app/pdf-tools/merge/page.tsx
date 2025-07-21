@@ -1,6 +1,6 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react-dom';
 import { useEffect, useState, useRef } from 'react';
 import {
   Card,
@@ -28,7 +28,7 @@ function SubmitButton() {
 
 export default function MergePdfPage() {
   const initialState: PdfToolFormState = { message: '' };
-  const [state, formAction] = useFormState(mergePdfAction, initialState);
+  const [state, formAction] = useActionState(mergePdfAction, initialState);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
