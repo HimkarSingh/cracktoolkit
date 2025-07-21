@@ -109,8 +109,10 @@ export async function mergePdfAction(
     files: z.array(pdfFileSchema).min(2, 'Please select at least two PDF files to merge.'),
   });
 
+  const allFiles = formData.getAll('files').filter((f): f is File => (f instanceof File && f.size > 0));
+
   const validatedFields = schema.safeParse({
-    files: formData.getAll('files'),
+    files: allFiles,
   });
 
   if (!validatedFields.success) {
@@ -153,8 +155,10 @@ export async function splitPdfAction(
     pageRange: z.string().min(1, 'Please enter page ranges to extract.'),
   });
 
+  const file = formData.get('file');
+
   const validatedFields = schema.safeParse({
-    file: formData.get('file'),
+    file: file,
     pageRange: formData.get('pageRange'),
   });
 
@@ -165,10 +169,10 @@ export async function splitPdfAction(
     };
   }
   
-  const { file, pageRange } = validatedFields.data;
+  const { pageRange } = validatedFields.data;
 
   try {
-    const pdfToSplit = await PDFDocument.load(await file.arrayBuffer());
+    const pdfToSplit = await PDFDocument.load(await validatedFields.data.file.arrayBuffer());
     const pageCount = pdfToSplit.getPageCount();
 
     const pagesToExtract = new Set<number>();
@@ -226,8 +230,10 @@ export async function compressPdfAction(
     file: pdfFileSchema,
   });
 
+  const file = formData.get('file');
+
   const validatedFields = schema.safeParse({
-    file: formData.get('file'),
+    file: file,
   });
 
   if (!validatedFields.success) {
@@ -237,10 +243,9 @@ export async function compressPdfAction(
     };
   }
 
-  const { file } = validatedFields.data;
 
   try {
-    const pdfToCompress = await PDFDocument.load(await file.arrayBuffer());
+    const pdfToCompress = await PDFDocument.load(await validatedFields.data.file.arrayBuffer());
     
     // Re-saving the document with `pdf-lib` can often reduce file size by optimizing its internal structure.
     const compressedPdfBytes = await pdfToCompress.save({ useObjectStreams: false });
@@ -268,8 +273,10 @@ export async function securePdfAction(
     password: z.string().min(4, 'Password must be at least 4 characters long.'),
   });
   
+  const file = formData.get('file');
+  
   const validatedFields = schema.safeParse({
-    file: formData.get('file'),
+    file: file,
     password: formData.get('password'),
   });
 
@@ -280,18 +287,17 @@ export async function securePdfAction(
     };
   }
 
-  const { file, password } = validatedFields.data;
+  const { password } = validatedFields.data;
 
   try {
-    const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
+    const pdfDoc = await PDFDocument.load(await validatedFields.data.file.arrayBuffer());
+    
+    pdfDoc.setProducer('VectorFlow');
+    pdfDoc.setCreator('VectorFlow');
+
     const securedPdfBytes = await pdfDoc.save({ 
       userPassword: password,
       ownerPassword: password,
-      permissions: {
-        printing: 'highResolution',
-        copying: false,
-        modifying: false,
-      }
     });
 
     const base64 = Buffer.from(securedPdfBytes).toString('base64');
@@ -316,8 +322,10 @@ export async function pdfToImageAction(
     file: pdfFileSchema,
   });
 
+  const file = formData.get('file');
+
   const validatedFields = schema.safeParse({
-    file: formData.get('file'),
+    file: file,
   });
 
   if (!validatedFields.success) {
@@ -342,8 +350,10 @@ export async function imageToPdfAction(
     files: z.array(supportedImageFileSchema).min(1, 'Please select at least one JPG or PNG file.'),
   });
 
+  const allFiles = formData.getAll('files').filter((f): f is File => (f instanceof File && f.size > 0));
+
   const validatedFields = schema.safeParse({
-    files: formData.getAll('files'),
+    files: allFiles,
   });
 
   if (!validatedFields.success) {
