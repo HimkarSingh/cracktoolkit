@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -18,6 +19,12 @@ interface ToolPageLayoutProps {
 }
 
 export function ToolPageLayout({ title, description, buttonText }: ToolPageLayoutProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center w-full h-full">
       <Card className="w-full max-w-2xl">
@@ -26,10 +33,10 @@ export function ToolPageLayout({ title, description, buttonText }: ToolPageLayou
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <FileUpload onFileSelect={() => {}} />
+          <FileUpload onFileSelect={handleFileSelect} />
         </CardContent>
         <CardFooter>
-          <Button disabled className="w-full">
+          <Button disabled={!selectedFile} className="w-full">
             {buttonText}
           </Button>
         </CardFooter>
