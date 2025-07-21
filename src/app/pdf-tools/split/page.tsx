@@ -38,10 +38,6 @@ export default function SplitPdfPage() {
 
   const handleFileSelect = (files: File[]) => {
     setSelectedFile(files[0] || null);
-    // Reset form state when a new file is selected
-    if (formRef.current) {
-      formRef.current.reset();
-    }
   };
 
   useEffect(() => {

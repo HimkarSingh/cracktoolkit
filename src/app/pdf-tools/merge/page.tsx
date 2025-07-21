@@ -1,8 +1,7 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useEffect, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -34,10 +33,7 @@ export default function MergePdfPage() {
   const { toast } = useToast();
 
   const handleFileSelect = (files: File[]) => {
-     // Reset form state when new files are selected
-     if (formRef.current) {
-      formRef.current.reset();
-    }
+     // This function can be used for any pre-submission logic if needed.
   };
   
   useEffect(() => {

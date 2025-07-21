@@ -1,8 +1,7 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useRef, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import {
   Card,
@@ -35,10 +34,7 @@ export default function PdfToImagePage() {
   const { toast } = useToast();
 
   const handleFileSelect = (files: File[]) => {
-    // Reset form state when a new file is selected
-    if (formRef.current) {
-      formRef.current.reset();
-    }
+    // This function can be used for any pre-submission logic if needed.
   };
 
   useEffect(() => {
