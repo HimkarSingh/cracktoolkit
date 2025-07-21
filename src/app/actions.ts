@@ -22,7 +22,7 @@ export interface PdfToolFormState {
   errors?: {
     files?: string[];
     file?: string[];
-    password?: string;
+    password?: string[];
     pageRange?: string[];
   };
 }
