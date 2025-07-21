@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { generateFillableForm } from '@/ai/flows/generate-fillable-form';
 import type { GenerateFillableFormOutput } from '@/ai/flows/generate-fillable-form';
 import { PDFDocument, rgb } from 'pdf-lib';
-import { Image as ImageScriptImage } from 'imagescript';
 
 
 export interface FormState {
@@ -325,28 +324,23 @@ export async function pdfToImageAction(
   const fileName = file.name.replace(/\.pdf$/i, '');
 
   try {
-    // This is a placeholder as `pdf-lib` cannot render pages to images directly.
-    // A more complex setup with a library like `pdf-js` on the server or a dedicated service is needed for this.
-    // For now, we will return a placeholder response.
-
     const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
     if (pdfDoc.getPageCount() === 0) {
       return { message: 'The provided PDF has no pages.'}
     }
     
     // We cannot convert PDF to image with pdf-lib. This is just a placeholder.
-    // We'll create a dummy image with the page number.
+    // We'll create a dummy SVG image with the page number.
     const downloadUrls = [];
     for(let i=0; i < pdfDoc.getPageCount(); i++) {
-        const image = new ImageScriptImage(300, 400);
-        image.fill(0xffffffff);
-        const font = new Uint8Array(); // using default font
-        const text = `Page ${i+1}`;
-        const textLayout = ImageScriptImage.renderText(font, text, 32, 0x000000ff);
-        image.composite(textLayout, (image.width - textLayout.width)/2, (image.height - textLayout.height)/2);
-        const imageBytes = await image.encodeJPEG(80);
-        const dataUri = `data:image/jpeg;base64,${Buffer.from(imageBytes).toString('base64')}`;
-        downloadUrls.push({ url: dataUri, name: `${fileName}-page-${i+1}.jpg` });
+        const svg = `
+          <svg width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="white"/>
+            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="black">Page ${i+1}</text>
+          </svg>
+        `;
+        const dataUri = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+        downloadUrls.push({ url: dataUri, name: `${fileName}-page-${i+1}.svg` });
     }
     
     return {
