@@ -109,7 +109,7 @@ export async function mergePdfAction(
     files: z.array(pdfFileSchema).min(2, 'Please select at least two PDF files to merge.'),
   });
 
-  const allFiles = formData.getAll('files').filter((f): f is File => (f instanceof File && f.size > 0));
+  const allFiles = formData.getAll('files').filter((f): f is File => f instanceof File && f.size > 0);
 
   const validatedFields = schema.safeParse({
     files: allFiles,
@@ -335,8 +335,6 @@ export async function pdfToImageAction(
     };
   }
   
-  // PDF to image conversion is not supported by the current libraries.
-  // Return an error message to the user.
   return { 
     message: 'Sorry, PDF to Image conversion is not yet available. We are working on it!'
   };
@@ -346,11 +344,18 @@ export async function imageToPdfAction(
   prevState: PdfToolFormState,
   formData: FormData
 ): Promise<PdfToolFormState> {
+  const allFiles = formData.getAll('files').filter((f): f is File => f instanceof File && f.size > 0);
+
+  if (allFiles.length === 0) {
+    return {
+      message: 'Invalid input.',
+      errors: { files: ['Please select at least one JPG or PNG file.'] },
+    };
+  }
+
   const schema = z.object({
     files: z.array(supportedImageFileSchema).min(1, 'Please select at least one JPG or PNG file.'),
   });
-
-  const allFiles = formData.getAll('files').filter((f): f is File => (f instanceof File && f.size > 0));
 
   const validatedFields = schema.safeParse({
     files: allFiles,
@@ -376,7 +381,6 @@ export async function imageToPdfAction(
       } else if (file.type === 'image/jpeg') {
         pdfImage = await pdfDoc.embedJpg(imageBytes);
       } else {
-        // This case should not be reached due to schema validation
         continue;
       }
       
