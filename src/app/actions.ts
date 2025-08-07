@@ -292,8 +292,8 @@ export async function securePdfAction(
   try {
     const pdfDoc = await PDFDocument.load(await validatedFields.data.file.arrayBuffer());
     
-    pdfDoc.setProducer('VectorFlow');
-    pdfDoc.setCreator('VectorFlow');
+    pdfDoc.setProducer('CrackToolKit');
+    pdfDoc.setCreator('CrackToolKit');
 
     const securedPdfBytes = await pdfDoc.save({ 
       userPassword: password,

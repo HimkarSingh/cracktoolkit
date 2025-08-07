@@ -5,7 +5,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'VectorFlow',
+  title: 'CrackToolKit',
   description: 'A modern, sleek utility app for comprehensive PDF and image management.',
 };
 

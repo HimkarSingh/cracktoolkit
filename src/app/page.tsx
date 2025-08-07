@@ -58,7 +58,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Welcome to VectorFlow</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome to CrackToolKit</h1>
         <p className="text-muted-foreground mt-2">
           Your all-in-one solution for PDF and image management.
         </p>

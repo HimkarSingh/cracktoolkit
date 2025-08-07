@@ -46,7 +46,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <Link href="/" className="flex items-center gap-2">
           <Logo className="w-8 h-8 text-primary" />
-          <span className="text-lg font-semibold">VectorFlow</span>
+          <span className="text-lg font-semibold">CrackToolKit</span>
         </Link>
       </SidebarHeader>
       <SidebarContent>
