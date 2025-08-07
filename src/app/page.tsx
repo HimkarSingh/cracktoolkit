@@ -63,7 +63,7 @@ export default function Home() {
           Your all-in-one solution for PDF and image management.
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {features.map((feature) => (
           <FeatureCard
             key={feature.href}
