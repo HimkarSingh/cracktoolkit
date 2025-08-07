@@ -298,6 +298,15 @@ export async function securePdfAction(
     const securedPdfBytes = await pdfDoc.save({ 
       userPassword: password,
       ownerPassword: password,
+      permissions: {
+        printing: 'highResolution',
+        modifying: false,
+        copying: false,
+        annotating: false,
+        fillingForms: true,
+        contentAccessibility: true,
+        documentAssembly: false,
+      }
     });
 
     const base64 = Buffer.from(securedPdfBytes).toString('base64');
@@ -312,32 +321,6 @@ export async function securePdfAction(
     console.error(e);
     return { message: 'An unexpected error occurred while securing the PDF.' };
   }
-}
-
-export async function pdfToImageAction(
-  prevState: PdfToolFormState,
-  formData: FormData
-): Promise<PdfToolFormState> {
-  const schema = z.object({
-    file: pdfFileSchema,
-  });
-
-  const file = formData.get('file');
-
-  const validatedFields = schema.safeParse({
-    file: file,
-  });
-
-  if (!validatedFields.success) {
-    return {
-      message: 'Invalid input.',
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
-  
-  return { 
-    message: 'Sorry, PDF to Image conversion is not yet available. We are working on it!'
-  };
 }
 
 export async function imageToPdfAction(
